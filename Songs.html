@@ -110,30 +110,33 @@ const audioPlayer = document.getElementById("audioPlayer");
 const songTitle = document.getElementById("songTitle");
 const playlistEl = document.getElementById("playlist");
 
-// ==== COOKIE FUNCTIONS ====
+// === Cookie Helpers ===
 function setCookie(name, value, days) {
-  const d = new Date();
-  d.setTime(d.getTime() + (days*24*60*60*1000));
-  const expires = "expires=" + d.toUTCString();
-  document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/";
+  try {
+    const d = new Date();
+    d.setTime(d.getTime() + (days * 86400000));
+    const expires = "expires=" + d.toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)};${expires};path=/`;
+  } catch (err) {
+    console.warn("Cookie error:", err);
+  }
 }
 
 function getCookie(name) {
   const cname = name + "=";
-  const decoded = decodeURIComponent(document.cookie);
-  const cookies = decoded.split(';');
+  const cookies = decodeURIComponent(document.cookie).split(';');
   for (let c of cookies) {
     c = c.trim();
     if (c.indexOf(cname) === 0) return c.substring(cname.length);
   }
-  return "";
+  return null;
 }
 
 function deleteCookie(name) {
-  document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 }
 
-// ==== PLAYER FUNCTIONS ====
+// === Build Playlist ===
 playlist.forEach((song, index) => {
   const li = document.createElement("li");
   li.textContent = song.title;
@@ -148,32 +151,40 @@ function updateActiveSong() {
 }
 
 function playSong(index, resumeTime = 0) {
+  if (index < 0 || index >= playlist.length) index = 0;
   currentIndex = index;
   const song = playlist[currentIndex];
-  audioPlayer.src = song.src;
   songTitle.textContent = "🎵 " + song.title;
-  audioPlayer.currentTime = resumeTime;
-  audioPlayer.play();
+  audioPlayer.src = song.src;
+
+  // Safe seek (only after metadata is loaded)
+  audioPlayer.addEventListener("loadedmetadata", () => {
+    if (resumeTime > 0 && resumeTime < audioPlayer.duration) {
+      audioPlayer.currentTime = resumeTime;
+    }
+    audioPlayer.play().catch(() => {}); // prevents "user gesture" warning
+  }, { once: true });
+
   updateActiveSong();
   setCookie("lastSongIndex", currentIndex, 7);
   setCookie("lastSongTime", resumeTime, 7);
 }
 
-// Auto-play next
+// === Auto-play Next Song ===
 audioPlayer.addEventListener("ended", () => {
   currentIndex = (currentIndex + 1) % playlist.length;
   playSong(currentIndex, 0);
 });
 
-// Save current playback time every few seconds
+// === Save Playback Progress ===
 setInterval(() => {
   if (!audioPlayer.paused && !isNaN(audioPlayer.currentTime)) {
     setCookie("lastSongIndex", currentIndex, 7);
     setCookie("lastSongTime", Math.floor(audioPlayer.currentTime), 7);
   }
-}, 3000);
+}, 5000);
 
-// Buttons
+// === Controls ===
 document.getElementById("nextBtn").addEventListener("click", () => {
   currentIndex = (currentIndex + 1) % playlist.length;
   playSong(currentIndex, 0);
@@ -189,7 +200,7 @@ document.getElementById("playPauseBtn").addEventListener("click", () => {
   else audioPlayer.pause();
 });
 
-// ==== RESTORE LAST SESSION ====
+// === Restore Last Session Safely ===
 window.addEventListener("load", () => {
   const savedIndex = parseInt(getCookie("lastSongIndex"));
   const savedTime = parseFloat(getCookie("lastSongTime"));
@@ -201,6 +212,7 @@ window.addEventListener("load", () => {
 });
 </script>
 
+
 <h3>How To Use Music Player</h3>
 <h4>Press the ▶️ Button to start playback. It will play all songs in order.</h4>
 <h4>To stop the music press ⏸️. You can click any song in the list to play it directly.</h4>
@@ -210,3 +222,4 @@ window.addEventListener("load", () => {
 
 </body>
 </html>
+
