@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Player</title>
+<style>
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: "Segoe UI", sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 40px;
+  }
+
+  .player {
+    background: #161b22;
+    padding: 30px;
+    border-radius: 20px;
+    width: 320px;
+    margin: 50px auto;
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+  }
+
+  h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  audio {
+    width: 100%;
+    margin: 20px 0;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+  }
+
+  button {
+    background: #238636;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #2ea043;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 25px;
+    text-align: left;
+    color: #8b949e;
+  }
+
+  li {
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  li.active {
+    background: #238636;
+    color: white;
+  }
+
+  li:hover {
+    background: #30363d;
+  }
+</style>
+</head>
+<body>
+
+<div class="player">
+  <h2 id="songTitle">Loading...</h2>
+  <audio id="audioPlayer" controls></audio>
+
+  <div class="controls">
+    <button id="prevBtn">⏮ Prev</button>
+    <button id="playPauseBtn">⏯ Play/Pause</button>
+    <button id="nextBtn">⏭ Next</button>
+  </div>
+
+  <ul id="playlist"></ul>
+</div>
+
+<script>
+  const playlist = [
+    { title: "So Long-Abba", src: "https://www.ashleecadell.com/xyzstorelibrary/Abba/Abba/11%20-%20So%20Long.mp3" },
+    { title: "Mamma Mia-Abba", src: "https://www.ashleecadell.com/xyzstorelibrary/Abba/Abba/01%20-%20Mamma%20Mia.mp3" },
+    { title: "Crazy World-Abba", src: "https://www.ashleecadell.com/xyzstorelibrary/Abba/Abba/12%20-%20Crazy%20World.mp3" },
+    { title: "Heaven-Bryan Adams", src: "https://www.ashleecadell.com/xyzstorelibrary/Bryan%20Adams/Reckless/04%20-%20Heaven.mp3" },
+	{ title: "Closing-Semisonic", src: "https://www.ashleecadell.com/xyzstorelibrary/Semisonic/Feeling%20Strangely%20Fine/112%20-%20Closing%20Time.mp3" },
+	{ title: "Never gonna give you up-Rick Astley ", src: "https://radioteca.net/media/uploads/audios/%25Y_%25m/never%20gonna%20give%20you%20up%20-%20astley%20rick%20top%2020.mp3" },
+	{ title: "Buddy Holly-Weezer", src: "https://dn710005.ca.archive.org/0/items/pardon-me/Buddy%20Holly.mp3" }
+    
+  ];
+
+  let currentIndex = 0;
+  const audioPlayer = document.getElementById("audioPlayer");
+  const songTitle = document.getElementById("songTitle");
+  const playlistEl = document.getElementById("playlist");
+
+  // Build playlist list
+  playlist.forEach((song, index) => {
+    const li = document.createElement("li");
+    li.textContent = song.title;
+    li.addEventListener("click", () => playSong(index));
+    playlistEl.appendChild(li);
+  });
+
+  function updateActiveSong() {
+    document.querySelectorAll("#playlist li").forEach((li, i) => {
+      li.classList.toggle("active", i === currentIndex);
+    });
+  }
+
+  function playSong(index) {
+    currentIndex = index;
+    const song = playlist[currentIndex];
+    audioPlayer.src = song.src;
+    songTitle.textContent = "🎵 " + song.title;
+    audioPlayer.play();
+    updateActiveSong();
+  }
+
+  // Auto-play next when song ends
+  audioPlayer.addEventListener("ended", () => {
+    currentIndex = (currentIndex + 1) % playlist.length;
+    playSong(currentIndex);
+  });
+
+  // Button controls
+  document.getElementById("nextBtn").addEventListener("click", () => {
+    currentIndex = (currentIndex + 1) % playlist.length;
+    playSong(currentIndex);
+  });
+
+  document.getElementById("prevBtn").addEventListener("click", () => {
+    currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+    playSong(currentIndex);
+  });
+
+  document.getElementById("playPauseBtn").addEventListener("click", () => {
+    if (audioPlayer.paused) {
+      audioPlayer.play();
+    } else {
+      audioPlayer.pause();
+    }
+  });
+
+  // Load the first song
+  playSong(0);
+</script>
+<h5>CopyRight 2025 AllensTechChannel</h5>
+<h5>To add song email <a href="mailto:allenstechchannel@gmail.com">me.</a>Then Go to <a href="mailto:allenstechchannel@gmail.com">Github</a> and download the new .HTML file. (Please note that I will only update this program if there are more that 3 song requests.)</h5>
+</body>
+</html>
