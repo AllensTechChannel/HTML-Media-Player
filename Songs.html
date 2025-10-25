@@ -110,12 +110,12 @@ const audioPlayer = document.getElementById("audioPlayer");
 const songTitle = document.getElementById("songTitle");
 const playlistEl = document.getElementById("playlist");
 
-// Cookie utilities
+// ==== COOKIE FUNCTIONS ====
 function setCookie(name, value, days) {
   const d = new Date();
   d.setTime(d.getTime() + (days*24*60*60*1000));
   const expires = "expires=" + d.toUTCString();
-  document.cookie = name + "=" + value + ";" + expires + ";path=/";
+  document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/";
 }
 
 function getCookie(name) {
@@ -133,7 +133,7 @@ function deleteCookie(name) {
   document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 }
 
-// Build playlist list
+// ==== PLAYER FUNCTIONS ====
 playlist.forEach((song, index) => {
   const li = document.createElement("li");
   li.textContent = song.title;
@@ -147,49 +147,58 @@ function updateActiveSong() {
   });
 }
 
-function playSong(index) {
+function playSong(index, resumeTime = 0) {
   currentIndex = index;
   const song = playlist[currentIndex];
   audioPlayer.src = song.src;
   songTitle.textContent = "🎵 " + song.title;
+  audioPlayer.currentTime = resumeTime;
   audioPlayer.play();
   updateActiveSong();
-  setCookie("lastSongIndex", currentIndex, 7); // save the last played song
+  setCookie("lastSongIndex", currentIndex, 7);
+  setCookie("lastSongTime", resumeTime, 7);
 }
 
-// Auto-play next when song ends
+// Auto-play next
 audioPlayer.addEventListener("ended", () => {
   currentIndex = (currentIndex + 1) % playlist.length;
-  playSong(currentIndex);
+  playSong(currentIndex, 0);
 });
 
-// Button controls
+// Save current playback time every few seconds
+setInterval(() => {
+  if (!audioPlayer.paused && !isNaN(audioPlayer.currentTime)) {
+    setCookie("lastSongIndex", currentIndex, 7);
+    setCookie("lastSongTime", Math.floor(audioPlayer.currentTime), 7);
+  }
+}, 3000);
+
+// Buttons
 document.getElementById("nextBtn").addEventListener("click", () => {
   currentIndex = (currentIndex + 1) % playlist.length;
-  playSong(currentIndex);
+  playSong(currentIndex, 0);
 });
 
 document.getElementById("prevBtn").addEventListener("click", () => {
   currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-  playSong(currentIndex);
+  playSong(currentIndex, 0);
 });
 
 document.getElementById("playPauseBtn").addEventListener("click", () => {
-  if (audioPlayer.paused) {
-    audioPlayer.play();
-  } else {
-    audioPlayer.pause();
-  }
+  if (audioPlayer.paused) audioPlayer.play();
+  else audioPlayer.pause();
 });
 
-// Load last played song if exists
-const savedIndex = parseInt(getCookie("lastSongIndex"));
-if (!isNaN(savedIndex) && savedIndex < playlist.length) {
-  currentIndex = savedIndex;
-  playSong(currentIndex);
-} else {
-  playSong(0);
-}
+// ==== RESTORE LAST SESSION ====
+window.addEventListener("load", () => {
+  const savedIndex = parseInt(getCookie("lastSongIndex"));
+  const savedTime = parseFloat(getCookie("lastSongTime"));
+  if (!isNaN(savedIndex) && savedIndex < playlist.length) {
+    playSong(savedIndex, isNaN(savedTime) ? 0 : savedTime);
+  } else {
+    playSong(0, 0);
+  }
+});
 </script>
 
 <h3>How To Use Music Player</h3>
