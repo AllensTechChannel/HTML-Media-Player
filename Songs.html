@@ -164,28 +164,26 @@
   // Load the first song
   playSong(0);
 </script>
- <footer>
-        &copy; <span id="year"></span> AllensTechChannel. All rights reserved.
-      <h2>Contact Me</h2>
-        <form class="contact-form" action="https://formspree.io/f/xjgvnrkw" method="POST">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
+<!-- GITHUB BUTTON -->
+<a href="https://github.com/AllensTechChannel" target="_blank">
+    <button type="button" style="width:300px;padding:10px;background:#1abc9c;color:white;border:none;border-radius:5px;cursor:pointer;margin:20px auto;display:block;">
+        Click Here For More Projects
+    </button>
+</a>
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="_replyto" required>
+<!-- FOOTER -->
+<footer>
+    Copyright &copy;
+    <span id="year"></span>
+    AllensTechChannel. All rights reserved. PLEASE REPORT ANY BUGS!
+</footer>
 
-            <label for="message">Message:</label>
-            <textarea id="message" name="message" rows="4" required></textarea>
-
-            <button type="submit">Send Message</button>
-        </form>
-    </footer>
-
-    <script>
-        // Automatically update the year
-        document.getElementById("year").textContent = new Date().getFullYear();
-    </script>
-
+<script>
+document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<div id="app-mount"></div>
 </body>
 </html>
+
 
